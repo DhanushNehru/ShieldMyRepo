@@ -89,7 +89,7 @@ SECRET_PATTERNS = [
     },
     {
         "name": "Azure Connection String",
-        "pattern": r"DefaultEndpointsProtocol=https?;AccountName=[^;]+;AccountKey=[^;]+;EndpointSuffix=(core\.windows\.net|core\.chinacloudapi\.cn|core\.usgovcloudapi\.net)",
+        "pattern": r"(?i)DefaultEndpointsProtocol=https?;AccountName=[^;]+;AccountKey=[^;]+;EndpointSuffix=(core\.windows\.net|core\.chinacloudapi\.cn|core\.usgovcloudapi\.net)",
         "severity": Severity.CRITICAL,
         "recommendation": "Remove Azure connection string and rotate credentials. Use managed identities or Azure Key Vault.",
     },
