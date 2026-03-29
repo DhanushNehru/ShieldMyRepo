@@ -2,11 +2,12 @@
 ShieldMyRepo CLI — Main entry point.
 
 Usage:
-    shieldmyrepo scan <path> [--badge] [--format json] [--scanners name1,name2]
+    shieldmyrepo scan <path> [--badge] [--format json] [--scanners name1,name2] [-v]
     shieldmyrepo list
 """
 
 import os
+import time
 
 import click
 from rich.console import Console
@@ -41,7 +42,11 @@ def main():
     "--output", "output_dir", default="reports",
     help="Output directory for reports and badges"
 )
-def scan(path, badge, output_format, scanner_names, output_dir):
+@click.option(
+    "-v", "--verbose", is_flag=True,
+    help="Show detailed output including files scanned and timing"
+)
+def scan(path, badge, output_format, scanner_names, output_dir, verbose):
     """Scan a repository for security issues.
 
     PATH is the path to the repository to scan.
@@ -67,10 +72,28 @@ def scan(path, badge, output_format, scanner_names, output_dir):
 
     # Run all scanners
     results = []
+    total_files = 0
+    
     for scanner in scanners:
+        if verbose:
+            console.print(f"🔍 Running [cyan]{scanner.name}[/cyan]...")
+            start_time = time.perf_counter()
+        
         with console.status(f"Running [cyan]{scanner.name}[/cyan]..."):
             result = scanner.run(repo_path)
             results.append(result)
+        
+        if verbose:
+            elapsed = time.perf_counter() - start_time
+            files_count = len(result.get("findings", [])) if isinstance(result, dict) else len(result.findings)
+            total_files += files_count
+            console.print(f"  ✅ {scanner.name}: scanned {files_count} files in {elapsed:.2f}s")
+
+    # Verbose summary
+    if verbose:
+        console.print(f"\n📊 [bold]Summary:[/bold]")
+        console.print(f"  • Total files scanned: {total_files}")
+        console.print(f"  • Scanners run: {len(scanners)}")
 
     # Render report
     report_data = render_report(results, repo_path)
