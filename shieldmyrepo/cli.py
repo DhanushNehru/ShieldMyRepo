@@ -31,7 +31,7 @@ def main():
 @click.argument("path", type=click.Path(exists=True))
 @click.option("--badge", is_flag=True, help="Generate an SVG badge")
 @click.option(
-    "--format", "output_format", type=click.Choice(["terminal", "json"]),
+    "--format", "output_format", type=click.Choice(["terminal", "json", "markdown"]),
     default="terminal", help="Output format"
 )
 @click.option(
@@ -98,9 +98,9 @@ def scan(path, badge, output_format, scanner_names, output_dir, verbose):
     # Render report
     report_data = render_report(results, repo_path)
 
-    # Save report if JSON format
-    if output_format == "json":
-        filepath = save_report(report_data, output_dir)
+    # Save report if JSON or Markdown format
+    if output_format in ["json", "markdown"]:
+        filepath = save_report(report_data, output_dir, fmt=output_format)
         console.print(f"📋 Report saved to [cyan]{filepath}[/cyan]")
 
     # Generate badge if requested
