@@ -120,6 +120,27 @@ SECRET_PATTERNS = [
         "severity": Severity.CRITICAL,
         "recommendation": "Remove Azure connection string and rotate credentials. Use managed identities or Azure Key Vault.",
     },
+    {
+        "name": "Discord Bot Token",
+        "pattern": r"[MNO][A-Za-z\d]{23,25}\.[\w-]{6}\.[\w-]{27,}",
+        "compiled": re.compile(r"[MNO][A-Za-z\d]{23,25}\.[\w-]{6}\.[\w-]{27,}"),
+        "severity": Severity.CRITICAL,
+        "recommendation": "Revoke the Discord token immediately in the Discord Developer Portal.",
+    },
+    {
+        "name": "Telegram Bot Token",
+        "pattern": r"[0-9]{9,10}:[a-zA-Z0-9_-]{35}",
+        "compiled": re.compile(r"[0-9]{9,10}:[a-zA-Z0-9_-]{35}"),
+        "severity": Severity.CRITICAL,
+        "recommendation": "Revoke the Telegram bot token using BotFather.",
+    },
+    {
+        "name": "Heroku API Key",
+        "pattern": r"(?i)heroku[a-z0-9_ .\-,]{0,25}[:=]\s*['\"]?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['\"]?",
+        "compiled": re.compile(r"(?i)heroku[a-z0-9_ .\-,]{0,25}[:=]\s*['\"]?[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['\"]?"),
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke the Heroku API key in your account settings.",
+    },
 ]
 
 # File extensions to skip
