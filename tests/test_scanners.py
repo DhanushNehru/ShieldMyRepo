@@ -159,3 +159,164 @@ def test_scanner_base_initializes_scanned_files_count(tmp_path):
     scanner.scan(str(tmp_path))
     
     assert scanner._scanned_files_count > 0
+
+
+def test_secrets_scanner_detects_slack_webhook(tmp_path):
+    """Test that the secrets scanner detects Slack Webhooks."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+
+    test_file = tmp_path / "notify.py"
+    test_file.write_text('WEBHOOK = "https://hooks.slack.com/services/T12345678/B12345678/ABCD1234EFGH5678IJKL9012"')
+
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+
+    assert len(findings) >= 1
+    assert any("Slack Webhook" in f.message for f in findings)
+
+
+def test_secrets_scanner_detects_stripe_key(tmp_path):
+    """Test that the secrets scanner detects Stripe API keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+
+    test_file = tmp_path / "payments.js"
+    test_file.write_text('const stripeKey = "sk_live_51Mabc123DEF456ghi789jkl";')
+
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+
+    assert len(findings) >= 1
+    assert any("Stripe Key" in f.message for f in findings)
+
+
+def test_secrets_scanner_detects_heroku_api_key(tmp_path):
+    """Test that the secrets scanner detects modern Heroku API keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+
+    test_file = tmp_path / "heroku_config.txt"
+    test_file.write_text('api_key = "HRKU-01234567-89ab-cdef-0123-456789abcdef"')
+
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+
+    assert len(findings) >= 1
+    assert any("Heroku API Key" in f.message for f in findings)
+
+
+def test_secrets_scanner_detects_discord_token(tmp_path):
+    """Test that the secrets scanner detects Discord Bot Tokens."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+
+    test_file = tmp_path / "discord_bot.py"
+    test_file.write_text('TOKEN = "M12345678901234567890123.A1b2_c.123456789012345678901234567"')
+
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+
+    assert len(findings) >= 1
+    assert any("Discord Bot Token" in f.message for f in findings)
+
+
+def test_secrets_scanner_detects_telegram_token(tmp_path):
+    """Test that the secrets scanner detects Telegram Bot Tokens."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+
+    test_file = tmp_path / "telebot.py"
+    test_file.write_text('bot_token = "1234567890:ABCdef1234567890_XYZabcdef123456789"')
+
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+
+    assert len(findings) >= 1
+    assert any("Telegram Bot Token" in f.message for f in findings)
+
+
+def test_secrets_scanner_detects_aws_secret_key(tmp_path):
+    """Test that the secrets scanner detects AWS Secret Keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "aws.config"
+    test_file.write_text('aws_secret = "aBcD1234eFgH5678iJkL9012mNoP3456qRsT7890"')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("AWS Secret Key" in f.message for f in findings)
+
+def test_secrets_scanner_detects_generic_api_key(tmp_path):
+    """Test that the secrets scanner detects Generic API Keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "config.js"
+    test_file.write_text('const API_KEY = "1234567890abcdefghij1234567890";')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Generic API Key" in f.message for f in findings)
+
+def test_secrets_scanner_detects_private_key(tmp_path):
+    """Test that the secrets scanner detects Private Keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "id_rsa"
+    test_file.write_text('-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAA...\n-----END OPENSSH PRIVATE KEY-----')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Private Key" in f.message for f in findings)
+
+def test_secrets_scanner_detects_jwt(tmp_path):
+    """Test that the secrets scanner detects JWT tokens."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "auth.py"
+    test_file.write_text('token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("JWT Token" in f.message for f in findings)
+
+def test_secrets_scanner_detects_google_firebase_api_key(tmp_path):
+    """Test that the secrets scanner detects Google/Firebase API keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "firebase.js"
+    test_file.write_text('apiKey: "AIza12345678901234567890123456789012345"')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Google / Firebase API Key" in f.message for f in findings)
+
+def test_secrets_scanner_detects_gcp_service_account(tmp_path):
+    """Test that the secrets scanner detects GCP Service Account Info."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "gcp.json"
+    test_file.write_text('{\n  "type": "service_account",\n  "project_id": "my-project"\n}')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("GCP Service Account Key Info" in f.message for f in findings)
+
+def test_secrets_scanner_detects_database_url(tmp_path):
+    """Test that the secrets scanner detects Database URLs with credentials."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "db.py"
+    test_file.write_text('DB_URI = "postgres://user:SuperSecretPassword123@localhost:5432/mydb"')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Database URL" in f.message for f in findings)
+
+def test_secrets_scanner_detects_azure_storage_key(tmp_path):
+    """Test that the secrets scanner detects Azure Storage Account Keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "azure.py"
+    test_file.write_text('AccountKey=1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Azure Storage Account Key" in f.message for f in findings)
+
+def test_secrets_scanner_detects_azure_ad_secret(tmp_path):
+    """Test that the secrets scanner detects Azure AD Client Secrets."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "azure_ad.py"
+    test_file.write_text('AZURE_CLIENT_SECRET = "1234567890123456789012345678901234"')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Azure AD Client Secret" in f.message for f in findings)
+
+def test_secrets_scanner_detects_azure_connection_string(tmp_path):
+    """Test that the secrets scanner detects Azure Connection Strings."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+    test_file = tmp_path / "azure_conn.py"
+    test_file.write_text('conn_str = "DefaultEndpointsProtocol=https;AccountName=myaccount;AccountKey=mykey;EndpointSuffix=core.windows.net"')
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+    assert any("Azure Connection String" in f.message for f in findings)
