@@ -8,7 +8,7 @@ unpinned actions, dangerous permissions, and script injection risks.
 
 import os
 import re
-from typing import List
+from typing import Any, Dict, List
 
 import yaml
 
@@ -22,10 +22,10 @@ class GitHubActionsScanner(ScannerBase):
     description = "Checks workflow files for security misconfigurations"
 
     def scan(self, repo_path: str) -> List[Finding]:
-        findings = []
+        findings: List[Finding] = []
         self._scanned_files_count = 0
 
-        workflows_dir = os.path.join(repo_path, ".github", "workflows")
+        workflows_dir: str = os.path.join(repo_path, ".github", "workflows")
         if not os.path.isdir(workflows_dir):
             return findings
 
@@ -33,8 +33,8 @@ class GitHubActionsScanner(ScannerBase):
             if not (filename.endswith(".yml") or filename.endswith(".yaml")):
                 continue
 
-            filepath = os.path.join(workflows_dir, filename)
-            rel_path = os.path.relpath(filepath, repo_path)
+            filepath: str = os.path.join(workflows_dir, filename)
+            rel_path: str = os.path.relpath(filepath, repo_path)
             self._scanned_files_count += 1
 
             try:
@@ -61,9 +61,9 @@ class GitHubActionsScanner(ScannerBase):
 
         return findings
 
-    def _check_permissions(self, workflow: dict, rel_path: str) -> List[Finding]:
+    def _check_permissions(self, workflow: Dict[str, Any], rel_path: str) -> List[Finding]:
         """Check for overly permissive workflow permissions."""
-        findings = []
+        findings: List[Finding] = []
 
         perms = workflow.get("permissions")
         if perms == "write-all":
@@ -87,13 +87,13 @@ class GitHubActionsScanner(ScannerBase):
 
     def _check_unpinned_actions(self, content: str, rel_path: str) -> List[Finding]:
         """Check for actions using tags instead of SHA pinning."""
-        findings = []
+        findings: List[Finding] = []
 
         for line_num, line in enumerate(content.split("\n"), 1):
             match = re.search(r"uses:\s*([^@\s]+)@([^\s#]+)", line)
             if match:
-                action = match.group(1)
-                ref = match.group(2)
+                action: str = match.group(1)
+                ref: str = match.group(2)
 
                 # Skip if it's a SHA (40 hex chars)
                 if re.match(r"^[a-f0-9]{40}$", ref):
@@ -115,9 +115,9 @@ class GitHubActionsScanner(ScannerBase):
 
     def _check_script_injection(self, content: str, rel_path: str) -> List[Finding]:
         """Check for potential script injection via untrusted inputs."""
-        findings = []
+        findings: List[Finding] = []
 
-        dangerous_contexts = [
+        dangerous_contexts: List[str] = [
             "github.event.issue.title",
             "github.event.issue.body",
             "github.event.pull_request.title",
@@ -140,9 +140,9 @@ class GitHubActionsScanner(ScannerBase):
 
         return findings
 
-    def _check_pr_target(self, workflow: dict, rel_path: str) -> List[Finding]:
+    def _check_pr_target(self, workflow: Dict[str, Any], rel_path: str) -> List[Finding]:
         """Check for dangerous pull_request_target usage."""
-        findings = []
+        findings: List[Finding] = []
 
         trigger = workflow.get("on", workflow.get(True, {}))
         if isinstance(trigger, dict) and "pull_request_target" in trigger:

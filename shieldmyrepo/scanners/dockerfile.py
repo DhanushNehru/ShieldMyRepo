@@ -7,10 +7,26 @@ build args, and other Docker security best practices.
 """
 
 import os
-import re
-from typing import List
+from typing import List, Set
 
 from shieldmyrepo.scanner_registry import Finding, ScannerBase, Severity
+
+
+SKIP_DIRS: Set[str] = {
+    ".git", "node_modules", "__pycache__", "venv",
+}
+
+DOCKERFILE_NAMES: Set[str] = {
+    "dockerfile", "dockerfile.dev", "dockerfile.prod",
+}
+
+COMPOSE_FILE_NAMES: Set[str] = {
+    "docker-compose.yml", "docker-compose.yaml", "compose.yml",
+}
+
+SECRET_ARG_WORDS: Set[str] = {
+    "password", "secret", "key", "token", "api_key", "apikey", "passwd",
+}
 
 
 class DockerfileScanner(ScannerBase):
@@ -20,18 +36,16 @@ class DockerfileScanner(ScannerBase):
     description = "Checks Dockerfiles for insecure configurations"
 
     def scan(self, repo_path: str) -> List[Finding]:
-        findings = []
+        findings: List[Finding] = []
         self._scanned_files_count = 0
 
         for root, dirs, files in os.walk(repo_path):
-            dirs[:] = [d for d in dirs if d not in {
-                ".git", "node_modules", "__pycache__", "venv",
-            }]
+            dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
 
             for filename in files:
-                if filename.lower() in ("dockerfile", "dockerfile.dev", "dockerfile.prod"):
-                    filepath = os.path.join(root, filename)
-                    rel_path = os.path.relpath(filepath, repo_path)
+                if filename.lower() in DOCKERFILE_NAMES:
+                    filepath: str = os.path.join(root, filename)
+                    rel_path: str = os.path.relpath(filepath, repo_path)
                     self._scanned_files_count += 1
 
                     try:
@@ -43,7 +57,7 @@ class DockerfileScanner(ScannerBase):
                     findings.extend(self._check_dockerfile(content, rel_path))
 
                 # Also check docker-compose files
-                if filename.lower() in ("docker-compose.yml", "docker-compose.yaml", "compose.yml"):
+                if filename.lower() in COMPOSE_FILE_NAMES:
                     filepath = os.path.join(root, filename)
                     rel_path = os.path.relpath(filepath, repo_path)
                     self._scanned_files_count += 1
@@ -60,17 +74,17 @@ class DockerfileScanner(ScannerBase):
 
     def _check_dockerfile(self, content: str, rel_path: str) -> List[Finding]:
         """Check a Dockerfile for security issues."""
-        findings = []
-        lines = content.split("\n")
-        has_user = False
+        findings: List[Finding] = []
+        lines: List[str] = content.split("\n")
+        has_user: bool = False
 
         for line_num, line in enumerate(lines, 1):
-            stripped = line.strip()
+            stripped: str = line.strip()
 
             # Check for USER instruction
             if stripped.upper().startswith("USER "):
                 has_user = True
-                user = stripped[5:].strip()
+                user: str = stripped[5:].strip()
                 if user in ("root", "0"):
                     findings.append(Finding(
                         severity=Severity.HIGH,
@@ -82,7 +96,7 @@ class DockerfileScanner(ScannerBase):
 
             # Check for unpinned base image
             if stripped.upper().startswith("FROM "):
-                image = stripped[5:].strip().split(" ")[0]
+                image: str = stripped[5:].strip().split(" ")[0]
                 if ":" not in image or image.endswith(":latest"):
                     findings.append(Finding(
                         severity=Severity.MEDIUM,
@@ -94,9 +108,8 @@ class DockerfileScanner(ScannerBase):
 
             # Check for secrets in build args
             if stripped.upper().startswith("ARG "):
-                arg_name = stripped[4:].strip().split("=")[0].strip()
-                secret_words = {"password", "secret", "key", "token", "api_key", "apikey", "passwd"}
-                if any(word in arg_name.lower() for word in secret_words):
+                arg_name: str = stripped[4:].strip().split("=")[0].strip()
+                if any(word in arg_name.lower() for word in SECRET_ARG_WORDS):
                     findings.append(Finding(
                         severity=Severity.HIGH,
                         message=f"Potential secret in build argument: {arg_name}",
@@ -139,10 +152,10 @@ class DockerfileScanner(ScannerBase):
 
     def _check_compose(self, content: str, rel_path: str) -> List[Finding]:
         """Check docker-compose files for security issues."""
-        findings = []
+        findings: List[Finding] = []
 
         for line_num, line in enumerate(content.split("\n"), 1):
-            stripped = line.strip()
+            stripped: str = line.strip()
 
             # Check for privileged mode
             if "privileged: true" in stripped:

@@ -9,13 +9,13 @@ Gemfile for outdated or potentially vulnerable dependencies.
 import json
 import os
 import re
-from typing import List
+from typing import Any, Dict, List
 
 from shieldmyrepo.scanner_registry import Finding, ScannerBase, Severity
 
 
 # Known vulnerable packages/patterns (simplified for demo — real impl would use an API)
-KNOWN_VULNERABLE = {
+KNOWN_VULNERABLE: Dict[str, Dict[str, Dict[str, Any]]] = {
     "python": {
         "pyyaml": {"below": "6.0", "severity": Severity.HIGH, "cve": "CVE-2020-14343"},
         "requests": {"below": "2.31.0", "severity": Severity.MEDIUM, "cve": "CVE-2023-32681"},
@@ -36,7 +36,7 @@ KNOWN_VULNERABLE = {
     },
 }
 
-DEPENDENCY_FILES = {
+DEPENDENCY_FILES: Dict[str, str] = {
     "requirements.txt": "python",
     "Pipfile": "python",
     "setup.py": "python",
@@ -57,7 +57,7 @@ class DependencyScanner(ScannerBase):
     description = "Scans package files for known vulnerabilities"
 
     def scan(self, repo_path: str) -> List[Finding]:
-        findings = []
+        findings: List[Finding] = []
         self._scanned_files_count = 0
 
         for root, dirs, files in os.walk(repo_path):
@@ -69,9 +69,9 @@ class DependencyScanner(ScannerBase):
 
             for filename in files:
                 if filename in DEPENDENCY_FILES:
-                    filepath = os.path.join(root, filename)
-                    rel_path = os.path.relpath(filepath, repo_path)
-                    ecosystem = DEPENDENCY_FILES[filename]
+                    filepath: str = os.path.join(root, filename)
+                    rel_path: str = os.path.relpath(filepath, repo_path)
+                    ecosystem: str = DEPENDENCY_FILES[filename]
                     self._scanned_files_count += 1
 
                     try:
@@ -107,17 +107,17 @@ class DependencyScanner(ScannerBase):
 
     def _check_package_json(self, content: str, rel_path: str) -> List[Finding]:
         """Check package.json for known vulnerable packages."""
-        findings = []
+        findings: List[Finding] = []
         try:
-            data = json.loads(content)
-            all_deps = {}
+            data: Dict[str, Any] = json.loads(content)
+            all_deps: Dict[str, str] = {}
             all_deps.update(data.get("dependencies", {}))
             all_deps.update(data.get("devDependencies", {}))
 
-            known = KNOWN_VULNERABLE.get("node", {})
+            known: Dict[str, Dict[str, Any]] = KNOWN_VULNERABLE.get("node", {})
             for pkg, version in all_deps.items():
                 if pkg.lower() in known:
-                    vuln = known[pkg.lower()]
+                    vuln: Dict[str, Any] = known[pkg.lower()]
                     findings.append(Finding(
                         severity=vuln["severity"],
                         message=f"Potentially vulnerable package: {pkg}@{version} ({vuln['cve']})",
@@ -130,8 +130,8 @@ class DependencyScanner(ScannerBase):
 
     def _check_requirements_txt(self, content: str, rel_path: str) -> List[Finding]:
         """Check requirements.txt for known vulnerable packages."""
-        findings = []
-        known = KNOWN_VULNERABLE.get("python", {})
+        findings: List[Finding] = []
+        known: Dict[str, Dict[str, Any]] = KNOWN_VULNERABLE.get("python", {})
 
         for line_num, line in enumerate(content.split("\n"), 1):
             line = line.strip()
@@ -141,9 +141,9 @@ class DependencyScanner(ScannerBase):
             # Parse package name
             match = re.match(r"^([a-zA-Z0-9_-]+)", line)
             if match:
-                pkg = match.group(1).lower()
+                pkg: str = match.group(1).lower()
                 if pkg in known:
-                    vuln = known[pkg]
+                    vuln: Dict[str, Any] = known[pkg]
                     findings.append(Finding(
                         severity=vuln["severity"],
                         message=f"Potentially vulnerable package: {line} ({vuln['cve']})",
@@ -155,7 +155,7 @@ class DependencyScanner(ScannerBase):
 
     def _check_unpinned_python(self, content: str, rel_path: str) -> List[Finding]:
         """Check for unpinned Python dependencies."""
-        findings = []
+        findings: List[Finding] = []
         for line_num, line in enumerate(content.split("\n"), 1):
             line = line.strip()
             if not line or line.startswith("#") or line.startswith("-"):
@@ -172,10 +172,10 @@ class DependencyScanner(ScannerBase):
 
     def _check_unpinned_node(self, content: str, rel_path: str) -> List[Finding]:
         """Check for widely unpinned Node.js dependencies."""
-        findings = []
+        findings: List[Finding] = []
         try:
-            data = json.loads(content)
-            all_deps = {}
+            data: Dict[str, Any] = json.loads(content)
+            all_deps: Dict[str, str] = {}
             all_deps.update(data.get("dependencies", {}))
             all_deps.update(data.get("devDependencies", {}))
 
