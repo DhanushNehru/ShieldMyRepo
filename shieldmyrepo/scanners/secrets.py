@@ -120,6 +120,34 @@ SECRET_PATTERNS: List[Dict[str, Any]] = [
         "severity": Severity.CRITICAL,
         "recommendation": "Remove Azure connection string and rotate credentials. Use managed identities or Azure Key Vault.",
     },
+    {
+        "name": "SendGrid API Key",
+        "pattern": r"SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}",
+        "compiled": re.compile(r"SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}"),
+        "severity": Severity.HIGH,
+        "recommendation": "Remove SendGrid API key and regenerate it. Use environment variables for API keys.",
+    },
+    {
+        "name": "Heroku API Key",
+        "pattern": r"(?i)heroku[_-]?(api[_-]?)?key\s*[:=]\s*['\"][0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['\"]",
+        "compiled": re.compile(r"(?i)heroku[_-]?(api[_-]?)?key\s*[:=]\s*['\"][0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}['\"]"),
+        "severity": Severity.HIGH,
+        "recommendation": "Remove Heroku API key and regenerate it. Use environment variables for API keys.",
+    },
+    {
+        "name": "Twilio API Key",
+        "pattern": r"SK[0-9a-fA-F]{32}",
+        "compiled": re.compile(r"SK[0-9a-fA-F]{32}"),
+        "severity": Severity.HIGH,
+        "recommendation": "Remove Twilio API key and rotate it. Use environment variables or Twilio Vault.",
+    },
+    {
+        "name": "npm Access Token",
+        "pattern": r"npm_[A-Za-z0-9]{36}",
+        "compiled": re.compile(r"npm_[A-Za-z0-9]{36}"),
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this npm access token immediately. Use environment variables for npm auth.",
+    },
 ]
 
 # File extensions to skip
