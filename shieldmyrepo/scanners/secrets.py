@@ -8,13 +8,13 @@ in source code files.
 
 import os
 import re
-from typing import List
+from typing import Any, Dict, List, Set
 
 from shieldmyrepo.scanner_registry import Finding, ScannerBase, Severity
 
 
 # Regex patterns for common secrets (pre-compiled for performance)
-SECRET_PATTERNS = [
+SECRET_PATTERNS: List[Dict[str, Any]] = [
     {
         "name": "AWS Access Key",
         "pattern": r"AKIA[0-9A-Z]{16}",
@@ -123,7 +123,7 @@ SECRET_PATTERNS = [
 ]
 
 # File extensions to skip
-SKIP_EXTENSIONS = {
+SKIP_EXTENSIONS: Set[str] = {
     ".png", ".jpg", ".jpeg", ".gif", ".ico", ".svg", ".woff", ".woff2",
     ".ttf", ".eot", ".mp3", ".mp4", ".zip", ".tar", ".gz", ".pdf",
     ".pyc", ".pyo", ".so", ".dylib", ".dll", ".exe", ".bin",
@@ -131,7 +131,7 @@ SKIP_EXTENSIONS = {
 }
 
 # Directories to skip
-SKIP_DIRS = {
+SKIP_DIRS: Set[str] = {
     ".git", "node_modules", "__pycache__", "venv", ".venv", "env",
     ".env", "dist", "build", ".eggs", "*.egg-info",
 }
@@ -144,7 +144,7 @@ class SecretScanner(ScannerBase):
     description = "Scans for leaked API keys, tokens, and passwords"
 
     def scan(self, repo_path: str) -> List[Finding]:
-        findings = []
+        findings: List[Finding] = []
         self._scanned_files_count = 0
 
         for root, dirs, files in os.walk(repo_path):
@@ -153,12 +153,12 @@ class SecretScanner(ScannerBase):
 
             for filename in files:
                 # Skip binary files
-                ext = os.path.splitext(filename)[1].lower()
+                ext: str = os.path.splitext(filename)[1].lower()
                 if ext in SKIP_EXTENSIONS:
                     continue
 
-                filepath = os.path.join(root, filename)
-                rel_path = os.path.relpath(filepath, repo_path)
+                filepath: str = os.path.join(root, filename)
+                rel_path: str = os.path.relpath(filepath, repo_path)
                 self._scanned_files_count += 1
 
                 try:

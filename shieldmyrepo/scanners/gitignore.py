@@ -7,13 +7,13 @@ excluded from version control.
 """
 
 import os
-from typing import List
+from typing import Any, Dict, List
 
 from shieldmyrepo.scanner_registry import Finding, ScannerBase, Severity
 
 
 # Files that should typically be in .gitignore
-SENSITIVE_PATTERNS = [
+SENSITIVE_PATTERNS: List[Dict[str, Any]] = [
     {
         "file": ".env",
         "description": "Environment variable file (may contain secrets)",
@@ -76,7 +76,7 @@ SENSITIVE_PATTERNS = [
     },
 ]
 
-RECOMMENDED_GITIGNORE_ENTRIES = [
+RECOMMENDED_GITIGNORE_ENTRIES: List[str] = [
     ".env",
     ".env.*",
     "*.pem",
@@ -100,10 +100,10 @@ class GitignoreScanner(ScannerBase):
     description = "Ensures sensitive files are properly gitignored"
 
     def scan(self, repo_path: str) -> List[Finding]:
-        findings = []
+        findings: List[Finding] = []
         self._scanned_files_count = 0
 
-        gitignore_path = os.path.join(repo_path, ".gitignore")
+        gitignore_path: str = os.path.join(repo_path, ".gitignore")
 
         # Check if .gitignore exists
         if not os.path.isfile(gitignore_path):
@@ -128,7 +128,7 @@ class GitignoreScanner(ScannerBase):
 
         # Check for missing recommended entries
         if gitignore_content:
-            missing = []
+            missing: List[str] = []
             for entry in RECOMMENDED_GITIGNORE_ENTRIES:
                 if entry not in gitignore_content:
                     missing.append(entry)
@@ -144,7 +144,7 @@ class GitignoreScanner(ScannerBase):
         return findings
 
     def _check_sensitive_file(
-        self, repo_path: str, pattern: dict,
+        self, repo_path: str, pattern: Dict[str, Any],
         gitignore_content: str, findings: List[Finding]
     ) -> None:
         """Check if a sensitive file exists and is not gitignored."""
@@ -155,14 +155,14 @@ class GitignoreScanner(ScannerBase):
 
             for filename in files:
                 self._scanned_files_count += 1
-                matches = False
+                matches: bool = False
                 if filename == pattern["file"]:
                     matches = True
                 elif filename.endswith(pattern["file"]):
                     matches = True
 
                 if matches:
-                    rel_path = os.path.relpath(
+                    rel_path: str = os.path.relpath(
                         os.path.join(root, filename), repo_path
                     )
 
