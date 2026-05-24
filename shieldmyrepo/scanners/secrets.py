@@ -75,6 +75,36 @@ SECRET_PATTERNS = [
         "severity": Severity.CRITICAL,
         "recommendation": "Revoke this Stripe key immediately. Use environment variables for payment keys.",
     },
+    {
+        "name": "Heroku API Key",
+        "pattern": r"(?i)(heroku[_-]?api[_-]?key|heroku[_-]?key)\s*[:=]\s*['\"][0-9a-f]{40}['\"]",
+        "severity": Severity.HIGH,
+        "recommendation": "Remove Heroku API key and rotate it. Use environment variables or Heroku config vars.",
+    },
+    {
+        "name": "NPM Token",
+        "pattern": r"npm_[A-Za-z0-9]{36,}",
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this NPM token immediately. Use environment variables or npmrc with restricted permissions.",
+    },
+    {
+        "name": "Twilio API Key",
+        "pattern": r"SK[0-9a-fA-F]{32}",
+        "severity": Severity.HIGH,
+        "recommendation": "Remove Twilio API key and rotate it. Use environment variables for communication credentials.",
+    },
+    {
+        "name": "SendGrid API Key",
+        "pattern": r"SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}",
+        "severity": Severity.HIGH,
+        "recommendation": "Remove SendGrid API key and rotate it. Use environment variables for email service credentials.",
+    },
+    {
+        "name": "Google API Key",
+        "pattern": r"AIza[0-9A-Za-z_-]{35}",
+        "severity": Severity.HIGH,
+        "recommendation": "Remove Google API key and restrict it in Google Cloud Console. Use environment variables.",
+    },
 ]
 
 # File extensions to skip
