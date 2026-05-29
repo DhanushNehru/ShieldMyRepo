@@ -124,7 +124,7 @@ class DependencyScanner(ScannerBase):
                         file=rel_path,
                         recommendation=f"Update {pkg} to version {vuln['below']} or higher.",
                     ))
-        except (json.JSONDecodeError, KeyError):
+        except json.JSONDecodeError:
             pass
         return findings
 
@@ -187,6 +187,6 @@ class DependencyScanner(ScannerBase):
                         file=rel_path,
                         recommendation=f"Pin {pkg} to a specific version range instead of '{version}'.",
                     ))
-        except (json.JSONDecodeError, KeyError):
+        except json.JSONDecodeError:
             pass
         return findings
