@@ -75,6 +75,36 @@ SECRET_PATTERNS = [
         "severity": Severity.CRITICAL,
         "recommendation": "Revoke this Stripe key immediately. Use environment variables for payment keys.",
     },
+    {
+        "name": "Google API Key",
+        "pattern": r"AIza[0-9A-Za-z_-]{35}",
+        "severity": Severity.HIGH,
+        "recommendation": "Restrict this Google API key to specific APIs and referrers. Use environment variables.",
+    },
+    {
+        "name": "Slack Bot Token",
+        "pattern": r"xoxb-[0-9]{10,}-[0-9]{10,}-[a-zA-Z0-9]{24,}",
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this Slack bot token and regenerate it. Store in environment variables.",
+    },
+    {
+        "name": "SendGrid API Key",
+        "pattern": r"SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}",
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this SendGrid API key immediately. Use environment variables for email keys.",
+    },
+    {
+        "name": "Heroku API Key",
+        "pattern": r"(?i)heroku.{0,20}[=:]\s*['\"][0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}['\"]",
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this Heroku API key. Use environment variables or Heroku's config vars.",
+    },
+    {
+        "name": "Twilio API Key",
+        "pattern": r"SK[0-9a-fA-F]{32}",
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this Twilio API key immediately. Use environment variables for messaging keys.",
+    },
 ]
 
 # File extensions to skip
