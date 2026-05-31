@@ -148,6 +148,13 @@ SECRET_PATTERNS: List[Dict[str, Any]] = [
         "severity": Severity.HIGH,
         "recommendation": "Revoke this npm access token immediately. Use environment variables for npm auth.",
     },
+    {
+        "name": "Telegram Bot Token",
+        "pattern": r"\d{7,10}:[A-Za-z0-9_-]{30,40}",
+        "compiled": re.compile(r"\d{7,10}:[A-Za-z0-9_-]{30,40}"),
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this Telegram bot token via @BotFather and regenerate. Use environment variables.",
+    },
 ]
 
 # File extensions to skip
