@@ -17,22 +17,22 @@ from shieldmyrepo.scanner_registry import Finding, ScannerBase, Severity
 # Known vulnerable packages/patterns (simplified for demo — real impl would use an API)
 KNOWN_VULNERABLE = {
     "python": {
-        "pyyaml": {"below": "6.0", "severity": Severity.HIGH, "cve": "CVE-2020-14343"},
-        "requests": {"below": "2.31.0", "severity": Severity.MEDIUM, "cve": "CVE-2023-32681"},
-        "urllib3": {"below": "2.0.7", "severity": Severity.HIGH, "cve": "CVE-2023-45803"},
-        "flask": {"below": "2.3.2", "severity": Severity.MEDIUM, "cve": "CVE-2023-30861"},
-        "django": {"below": "4.2.7", "severity": Severity.HIGH, "cve": "CVE-2023-46695"},
-        "jinja2": {"below": "3.1.3", "severity": Severity.HIGH, "cve": "CVE-2024-22195"},
-        "pillow": {"below": "10.2.0", "severity": Severity.HIGH, "cve": "CVE-2023-50447"},
-        "cryptography": {"below": "42.0.0", "severity": Severity.HIGH, "cve": "CVE-2024-0727"},
+        "pyyaml": {"below": "6.0.3", "severity": Severity.HIGH, "cve": "CVE-2020-14343"},
+        "requests": {"below": "2.32.4", "severity": Severity.MEDIUM, "cve": "CVE-2023-32681"},
+        "urllib3": {"below": "2.2.3", "severity": Severity.HIGH, "cve": "CVE-2023-45803"},
+        "flask": {"below": "3.0.3", "severity": Severity.MEDIUM, "cve": "CVE-2023-30861"},
+        "django": {"below": "4.2.30", "severity": Severity.HIGH, "cve": "CVE-2023-46695"},
+        "jinja2": {"below": "3.1.6", "severity": Severity.HIGH, "cve": "CVE-2024-22195"},
+        "pillow": {"below": "10.4.0", "severity": Severity.HIGH, "cve": "CVE-2023-50447"},
+        "cryptography": {"below": "47.0.0", "severity": Severity.HIGH, "cve": "CVE-2024-0727"},
     },
     "node": {
         "lodash": {"below": "4.17.21", "severity": Severity.HIGH, "cve": "CVE-2021-23337"},
-        "axios": {"below": "1.6.0", "severity": Severity.MEDIUM, "cve": "CVE-2023-45857"},
-        "express": {"below": "4.18.2", "severity": Severity.MEDIUM, "cve": "CVE-2024-29041"},
-        "jsonwebtoken": {"below": "9.0.0", "severity": Severity.CRITICAL, "cve": "CVE-2022-23529"},
-        "minimatch": {"below": "3.1.2", "severity": Severity.HIGH, "cve": "CVE-2022-3517"},
-        "semver": {"below": "7.5.2", "severity": Severity.MEDIUM, "cve": "CVE-2022-25883"},
+        "axios": {"below": "1.16.1", "severity": Severity.MEDIUM, "cve": "CVE-2023-45857"},
+        "express": {"below": "5.2.1", "severity": Severity.MEDIUM, "cve": "CVE-2024-29041"},
+        "jsonwebtoken": {"below": "9.0.3", "severity": Severity.CRITICAL, "cve": "CVE-2022-23529"},
+        "minimatch": {"below": "10.2.5", "severity": Severity.HIGH, "cve": "CVE-2022-3517"},
+        "semver": {"below": "7.8.1", "severity": Severity.MEDIUM, "cve": "CVE-2022-25883"},
     },
 }
 
