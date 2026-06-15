@@ -33,6 +33,34 @@ def test_secrets_scanner_detects_github_token(tmp_path):
     assert any("GitHub" in f.message for f in findings)
 
 
+def test_secrets_scanner_detects_new_patterns(tmp_path):
+    """Test detection of OpenAI, Discord, Telegram, and Stripe publishable keys."""
+    from shieldmyrepo.scanners.secrets import SecretScanner
+
+    test_file = tmp_path / "secrets.env"
+    # Construct tokens dynamically to avoid push protection false positives
+    # These are test fixtures, not real secrets
+    openai_key = "sk-" + "x" * 20 + "T3BlbkFJ" + "x" * 20
+    discord_token = "M" + "y" * 23 + "." + "z" * 6 + "." + "a" * 27
+    telegram_token = "123456789:" + "b" * 35
+    stripe_key = "pk_live_" + "c" * 24
+    test_file.write_text(
+        f'OPENAI_KEY="{openai_key}"\n'
+        f'DISCORD_TOKEN="{discord_token}"\n'
+        f'TELEGRAM_TOKEN="{telegram_token}"\n'
+        f'STRIPE_KEY="{stripe_key}"\n'
+    )
+
+    scanner = SecretScanner()
+    findings = scanner.scan(str(tmp_path))
+
+    messages = [f.message for f in findings]
+    assert any("OpenAI" in m for m in messages), f"Missing OpenAI detection: {messages}"
+    assert any("Discord" in m for m in messages), f"Missing Discord detection: {messages}"
+    assert any("Telegram" in m for m in messages), f"Missing Telegram detection: {messages}"
+    assert any("Stripe Publishable" in m for m in messages), f"Missing Stripe detection: {messages}"
+
+
 def test_secrets_scanner_clean_repo(tmp_path):
     """Test that clean repos pass the secrets scanner."""
     from shieldmyrepo.scanners.secrets import SecretScanner

@@ -148,6 +148,34 @@ SECRET_PATTERNS: List[Dict[str, Any]] = [
         "severity": Severity.HIGH,
         "recommendation": "Revoke this npm access token immediately. Use environment variables for npm auth.",
     },
+    {
+        "name": "OpenAI API Key",
+        "pattern": r"sk-[A-Za-z0-9]{20,}T3BlbkFJ[A-Za-z0-9]{20,}",
+        "compiled": re.compile(r"sk-[A-Za-z0-9]{20,}T3BlbkFJ[A-Za-z0-9]{20,}"),
+        "severity": Severity.CRITICAL,
+        "recommendation": "Revoke this OpenAI API key immediately. Use environment variables or a secrets manager.",
+    },
+    {
+        "name": "Discord Bot Token",
+        "pattern": r"[MN][A-Za-z0-9_-]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}",
+        "compiled": re.compile(r"[MN][A-Za-z0-9_-]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}"),
+        "severity": Severity.CRITICAL,
+        "recommendation": "Revoke this Discord bot token immediately. Rotate in the Discord Developer Portal.",
+    },
+    {
+        "name": "Telegram Bot Token",
+        "pattern": r"\d{8,10}:[A-Za-z0-9_-]{35}",
+        "compiled": re.compile(r"\d{8,10}:[A-Za-z0-9_-]{35}"),
+        "severity": Severity.HIGH,
+        "recommendation": "Revoke this Telegram bot token via @BotFather and regenerate.",
+    },
+    {
+        "name": "Stripe Publishable Key",
+        "pattern": r"pk_(live|test)_[A-Za-z0-9]{24,}",
+        "compiled": re.compile(r"pk_(live|test)_[A-Za-z0-9]{24,}"),
+        "severity": Severity.INFO,
+        "recommendation": "Stripe publishable keys are public-facing. Ensure no sk_ secret keys are leaked. Use environment variables.",
+    },
 ]
 
 # File extensions to skip
