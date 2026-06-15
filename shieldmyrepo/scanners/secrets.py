@@ -157,15 +157,15 @@ SECRET_PATTERNS: List[Dict[str, Any]] = [
     },
     {
         "name": "Discord Bot Token",
-        "pattern": r"[MN][A-Za-z0-9]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}",
-        "compiled": re.compile(r"[MN][A-Za-z0-9]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}"),
+        "pattern": r"[MN][A-Za-z0-9_-]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}",
+        "compiled": re.compile(r"[MN][A-Za-z0-9_-]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}"),
         "severity": Severity.CRITICAL,
         "recommendation": "Revoke this Discord bot token immediately. Rotate in the Discord Developer Portal.",
     },
     {
         "name": "Telegram Bot Token",
-        "pattern": r"\d{8,10}:[A-Za-z0-9_-]{28,32}",
-        "compiled": re.compile(r"\d{8,10}:[A-Za-z0-9_-]{28,32}"),
+        "pattern": r"\d{8,10}:[A-Za-z0-9_-]{35}",
+        "compiled": re.compile(r"\d{8,10}:[A-Za-z0-9_-]{35}"),
         "severity": Severity.HIGH,
         "recommendation": "Revoke this Telegram bot token via @BotFather and regenerate.",
     },
@@ -173,8 +173,8 @@ SECRET_PATTERNS: List[Dict[str, Any]] = [
         "name": "Stripe Publishable Key",
         "pattern": r"pk_(live|test)_[A-Za-z0-9]{24,}",
         "compiled": re.compile(r"pk_(live|test)_[A-Za-z0-9]{24,}"),
-        "severity": Severity.HIGH,
-        "recommendation": "Remove Stripe publishable key from source code. Use environment variables.",
+        "severity": Severity.INFO,
+        "recommendation": "Stripe publishable keys are public-facing. Ensure no sk_ secret keys are leaked. Use environment variables.",
     },
 ]
 
