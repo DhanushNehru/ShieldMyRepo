@@ -47,16 +47,9 @@ class GitHubActionsScanner(ScannerBase):
             if not isinstance(workflow, dict):
                 continue
 
-            # Check for dangerous permissions
             findings.extend(self._check_permissions(workflow, rel_path))
-
-            # Check for unpinned actions
             findings.extend(self._check_unpinned_actions(content, rel_path))
-
-            # Check for script injection
             findings.extend(self._check_script_injection(content, rel_path))
-
-            # Check for pull_request_target
             findings.extend(self._check_pr_target(workflow, rel_path))
 
         return findings
@@ -74,7 +67,6 @@ class GitHubActionsScanner(ScannerBase):
                 recommendation="Use least-privilege permissions. Specify only needed permissions explicitly.",
             ))
 
-        # Check if no permissions are set (defaults to write for some events)
         if "permissions" not in workflow:
             findings.append(Finding(
                 severity=Severity.MEDIUM,
@@ -90,16 +82,32 @@ class GitHubActionsScanner(ScannerBase):
         findings: List[Finding] = []
 
         for line_num, line in enumerate(content.split("\n"), 1):
+            docker_match = re.search(r"uses:\s*(docker://\S+)", line)
+            if docker_match:
+                spec: str = docker_match.group(1)
+                # Digest-pinned container actions are already immutable.
+                if re.search(r"@sha256:[a-fA-F0-9]{64}$", spec):
+                    continue
+                findings.append(Finding(
+                    severity=Severity.MEDIUM,
+                    message=f"Unpinned action: {spec}",
+                    file=rel_path,
+                    line=line_num,
+                    recommendation=(
+                        f"Pin {spec} to a digest with @sha256:<64-hex> "
+                        "instead of a mutable tag."
+                    ),
+                ))
+                continue
+
             match = re.search(r"uses:\s*([^@\s]+)@([^\s#]+)", line)
             if match:
                 action: str = match.group(1)
                 ref: str = match.group(2)
 
-                # Skip if it's a SHA (40 hex chars)
                 if re.match(r"^[a-f0-9]{40}$", ref):
                     continue
 
-                # Skip local actions
                 if action.startswith("./"):
                     continue
 
