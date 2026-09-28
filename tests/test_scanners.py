@@ -38,8 +38,6 @@ def test_secrets_scanner_detects_new_patterns(tmp_path):
     from shieldmyrepo.scanners.secrets import SecretScanner
 
     test_file = tmp_path / "secrets.env"
-    # Construct tokens dynamically to avoid push protection false positives
-    # These are test fixtures, not real secrets
     openai_key = "sk-" + "x" * 20 + "T3BlbkFJ" + "x" * 20
     discord_token = "M" + "y" * 23 + "." + "z" * 6 + "." + "a" * 27
     telegram_token = "123456789:" + "b" * 35
@@ -136,7 +134,6 @@ def test_dependency_scanner_unrequired(tmp_path):
     scanner = DependencyScanner()
     findings = scanner.scan(str(tmp_path))
 
-    # Should return an INFO finding about no dependency files
     assert any("No dependency" in f.message for f in findings)
 
 
@@ -157,18 +154,15 @@ def test_secrets_scanner_tracks_scanned_files_count(tmp_path):
     """Test that the secrets scanner tracks the number of scanned files."""
     from shieldmyrepo.scanners.secrets import SecretScanner
 
-    # Create multiple files with different extensions
     (tmp_path / "app.py").write_text('print("hello")\n')
-    (tmp_path / "config.py").write_text('secret = "mysecretvalue"\n')  # Matches Generic Secret pattern
+    (tmp_path / "config.py").write_text('secret = "mysecretvalue"\n')
     (tmp_path / "main.py").write_text('import os\n')
-    (tmp_path / "image.png").write_bytes(b'\x89PNG\r\n\x1a\n')  # Binary file, should be skipped
+    (tmp_path / "image.png").write_bytes(b'\x89PNG\r\n\x1a\n')
 
     scanner = SecretScanner()
     findings = scanner.scan(str(tmp_path))
 
-    # Should have scanned 3 files (excluding the .png binary file)
     assert scanner._scanned_files_count == 3
-    # Should have detected the secret in config.py
     assert len(findings) >= 1
 
 
@@ -178,12 +172,53 @@ def test_scanner_base_initializes_scanned_files_count(tmp_path):
 
     scanner = SecretScanner()
     
-    # Should be initialized to 0
     assert hasattr(scanner, '_scanned_files_count')
     assert scanner._scanned_files_count == 0
     
-    # After scanning, should be updated
     (tmp_path / "test.py").write_text('print("test")\n')
     scanner.scan(str(tmp_path))
     
     assert scanner._scanned_files_count > 0
+
+
+def test_github_actions_scanner_accepts_docker_digest_pin(tmp_path):
+    """Digest-pinned docker:// actions should not be flagged as unpinned."""
+    from shieldmyrepo.scanners.github_actions import GitHubActionsScanner
+
+    workflows = tmp_path / ".github" / "workflows"
+    workflows.mkdir(parents=True)
+    digest = "a" * 64
+    (workflows / "ci.yml").write_text(
+        "name: ci\n"
+        "on: push\n"
+        "permissions: read-all\n"
+        "jobs:\n"
+        "  build:\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps:\n"
+        f"      - uses: docker://node@sha256:{digest}\n"
+    )
+
+    findings = GitHubActionsScanner().scan(str(tmp_path))
+    assert not any("Unpinned action" in f.message for f in findings)
+
+
+def test_github_actions_scanner_flags_unpinned_docker_tag(tmp_path):
+    """Mutable docker:// tags should still produce an unpinned-action finding."""
+    from shieldmyrepo.scanners.github_actions import GitHubActionsScanner
+
+    workflows = tmp_path / ".github" / "workflows"
+    workflows.mkdir(parents=True)
+    (workflows / "ci.yml").write_text(
+        "name: ci\n"
+        "on: push\n"
+        "permissions: read-all\n"
+        "jobs:\n"
+        "  build:\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps:\n"
+        "      - uses: docker://node:latest\n"
+    )
+
+    findings = GitHubActionsScanner().scan(str(tmp_path))
+    assert any("Unpinned action: docker://node:latest" in f.message for f in findings)
